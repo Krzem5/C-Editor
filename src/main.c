@@ -12,25 +12,18 @@ int main(int argc,const char** argv){
 	SetConsoleOutputCP(CP_UTF8);
 	HANDLE hi=GetStdHandle(STD_INPUT_HANDLE);
 	HANDLE ho=GetStdHandle(STD_OUTPUT_HANDLE);
+	HANDLE he=GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD im;
 	GetConsoleMode(hi,&im);
-	SetConsoleMode(hi,ENABLE_WINDOW_INPUT|ENABLE_MOUSE_INPUT|ENABLE_VIRTUAL_TERMINAL_INPUT);
+	SetConsoleMode(hi,ENABLE_WINDOW_INPUT|ENABLE_MOUSE_INPUT|ENABLE_VIRTUAL_TERMINAL_INPUT|ENABLE_EXTENDED_FLAGS);
 	DWORD om;
 	GetConsoleMode(ho,&om);
 	SetConsoleMode(ho,ENABLE_PROCESSED_OUTPUT|ENABLE_VIRTUAL_TERMINAL_PROCESSING|DISABLE_NEWLINE_AUTO_RETURN);
-	CONSOLE_CURSOR_INFO ci;
-	GetConsoleCursorInfo(ho,&ci);
-	ci.bVisible=0;
-	SetConsoleCursorInfo(ho,&ci);
+	DWORD em;
+	GetConsoleMode(he,&em);
+	SetConsoleMode(he,ENABLE_PROCESSED_OUTPUT|ENABLE_VIRTUAL_TERMINAL_PROCESSING|DISABLE_NEWLINE_AUTO_RETURN);
 	CONSOLE_SCREEN_BUFFER_INFO sbi;
 	GetConsoleScreenBufferInfo(ho,&sbi);
-	DWORD tmp;
-	COORD z={
-		0,
-		0
-	};
-	FillConsoleOutputCharacterA(ho,' ',sbi.dwSize.X*sbi.dwSize.Y,z,&tmp);
-	FillConsoleOutputAttribute(ho,7,sbi.dwSize.X*sbi.dwSize.Y,z,&tmp);
 	editor_t e;
 	init_editor(&e);
 	set_window_size(&e,sbi.srWindow.Right+1,sbi.srWindow.Bottom+1);
@@ -73,6 +66,12 @@ int main(int argc,const char** argv){
 									else if (k=='D'){
 										type_key(&e,EDITOR_KEY_CTRL_LEFT);
 									}
+									else if (k=='F'){
+										type_key(&e,EDITOR_KEY_CTRL_END);
+									}
+									else if (k=='H'){
+										type_key(&e,EDITOR_KEY_CTRL_HOME);
+									}
 								}
 							}
 						}
@@ -92,7 +91,7 @@ int main(int argc,const char** argv){
 								if (k=='5'){
 									k=_getch();
 									if (k=='~'){
-										type_key(&e,EDITOR_KEY_PAGE_CTRL_UP);
+										type_key(&e,EDITOR_KEY_CTRL_PAGE_UP);
 									}
 								}
 							}
@@ -107,7 +106,7 @@ int main(int argc,const char** argv){
 								if (k=='5'){
 									k=_getch();
 									if (k=='~'){
-										type_key(&e,EDITOR_KEY_PAGE_CTRL_DOWN);
+										type_key(&e,EDITOR_KEY_CTRL_PAGE_DOWN);
 									}
 								}
 							}
@@ -145,8 +144,17 @@ int main(int argc,const char** argv){
 		}
 	}
 	free_editor(&e);
+	DWORD tmp;
+	COORD z={
+		0,
+		0
+	};
+	FillConsoleOutputCharacterA(ho,' ',sbi.dwSize.X*sbi.dwSize.Y,z,&tmp);
+	FillConsoleOutputAttribute(ho,7,sbi.dwSize.X*sbi.dwSize.Y,z,&tmp);
+	SetConsoleCursorPosition(ho,z);
 	SetConsoleMode(hi,im);
 	SetConsoleMode(ho,om);
+	SetConsoleMode(he,em);
 	return 0;
 }
 #else
