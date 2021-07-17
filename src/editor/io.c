@@ -71,3 +71,143 @@ _write_newline:
 	}
 	printf("\x1b]0;%s - Editor\x07",e->fp);
 }
+
+
+
+void type_key(editor_t* e,uint16_t k){
+	if (e->el){
+		if (k==EDITOR_KEY_ENTER){
+			free(*(e->e+e->el-1));
+			e->el--;
+			if (!e->el){
+				free(e->e);
+				e->e=NULL;
+			}
+			else{
+				e->e=realloc(e->e,e->el*sizeof(editor_error_t*));
+			}
+		}
+		return;
+	}
+	if (k==EDITOR_KEY_CTRL_C){
+		e->fl&=~EDITOR_FLAG_OPEN;
+	}
+	else if (k==EDITOR_KEY_UP){
+		if (e->st.cy){
+			e->st.cy--;
+			if (e->st.l_off>e->st.cy){
+				e->st.l_off--;
+			}
+			update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER|EDITOR_LINE_FLAG_UPDATE_CURSOR_POS);
+			update_line(e,e->st.cy+1,EDITOR_LINE_FLAG_RENDER);
+		}
+	}
+	else if (k==EDITOR_KEY_DOWN){
+		if (e->st.cy<e->ll-1){
+			e->st.cy++;
+			if (e->st.l_off+e->st.h-2<=e->st.cy){
+				e->st.l_off++;
+			}
+			update_line(e,e->st.cy-1,EDITOR_LINE_FLAG_RENDER);
+			update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER|EDITOR_LINE_FLAG_UPDATE_CURSOR_POS);
+		}
+	}
+	else if (k==EDITOR_KEY_RIGHT){
+		if (e->st.cx<(*(e->l+e->st.cy))->l){
+			e->st.cx++;
+			update_line(e,e->st.cy,0);
+		}
+		else if (e->st.cy<e->ll-1){
+			e->st.cx=0;
+			e->st.cy++;
+			if (e->st.l_off+e->st.h-2<=e->st.cy){
+				e->st.l_off++;
+			}
+			update_line(e,e->st.cy-1,EDITOR_LINE_FLAG_RENDER);
+			update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER);
+		}
+	}
+	else if (k==EDITOR_KEY_LEFT){
+		if (e->st.cx){
+			e->st.cx--;
+			update_line(e,e->st.cy,0);
+		}
+		else if (e->st.cy){
+			e->st.cy--;
+			e->st.cx=(*(e->l+e->st.cy))->l;
+			if (e->st.l_off>e->st.cy){
+				e->st.l_off--;
+			}
+			update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER);
+			update_line(e,e->st.cy+1,EDITOR_LINE_FLAG_RENDER);
+		}
+	}
+	else if (k==EDITOR_KEY_HOME){
+		uint32_t ws_c=(*(e->l+e->st.cy))->_ws_c;
+		if (!ws_c){
+			if (e->st.cx){
+				e->st.cx=0;
+				update_line(e,e->st.cy,0);
+			}
+		}
+		else{
+			e->st.cx=(e->st.cx==ws_c?0:ws_c);
+			update_line(e,e->st.cy,0);
+		}
+	}
+	else if (k==EDITOR_KEY_END){
+		uint32_t l=(*(e->l+e->st.cy))->l;
+		if (e->st.cx<l){
+			e->st.cx=l;
+			update_line(e,e->st.cy,0);
+		}
+	}
+	else if (k==EDITOR_KEY_CTRL_UP){
+		if (e->st.l_off){
+			e->st.l_off--;
+			if (e->st.l_off<e->st.cy){
+				e->st.cy--;
+				update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER);
+				update_line(e,e->st.cy+1,EDITOR_LINE_FLAG_RENDER);
+			}
+		}
+		else if (e->st.cy){
+			e->st.cy--;
+			update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER);
+			update_line(e,e->st.cy+1,EDITOR_LINE_FLAG_RENDER);
+		}
+	}
+	else if (k==EDITOR_KEY_CTRL_DOWN){
+		if (e->st.l_off+e->st.h-2<e->ll){
+			e->st.l_off++;
+			if (e->st.l_off+e->st.h-2>e->st.cy){
+				e->st.cy++;
+				update_line(e,e->st.cy-1,EDITOR_LINE_FLAG_RENDER);
+				update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER);
+			}
+		}
+		else if (e->st.cy<e->ll-1){
+			e->st.cy++;
+			update_line(e,e->st.cy-1,EDITOR_LINE_FLAG_RENDER);
+			update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER);
+		}
+	}
+	else if (k==EDITOR_KEY_CTRL_HOME){
+		if (e->st.cy){
+			uint32_t l_cy=e->st.cy;
+			e->st.cy=0;
+			e->st.l_off=0;
+			update_line(e,0,EDITOR_LINE_FLAG_RENDER);
+			update_line(e,l_cy,EDITOR_LINE_FLAG_RENDER);
+		}
+	}
+	else if (k==EDITOR_KEY_CTRL_END){
+		if (e->st.cy<e->ll-1){
+			uint32_t l_cy=e->st.cy;
+			e->st.cy=e->ll-1;
+			e->st.l_off=e->ll-e->st.h+2;
+			update_line(e,l_cy,EDITOR_LINE_FLAG_RENDER);
+			update_line(e,e->st.cy,EDITOR_LINE_FLAG_RENDER);
+		}
+	}
+}

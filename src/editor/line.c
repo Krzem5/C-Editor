@@ -16,23 +16,23 @@ void update_line(editor_t* e,uint32_t i,uint8_t fl){
 	}
 	uint32_t j=0;
 	uint32_t n=0;
-	fl|=(e->st.cy==i&&!(fl&_EDITOR_LINE_FLAG_UPDATE_CURSOR_POS)?_EDITOR_LINE_FLAG_HAS_CURSOR:0)|(fl&EDITOR_LINE_FLAG_RENDER?_EDITOR_LINE_FLAG_IN_WHITESPACE:0);
+	fl|=(e->st.cy==i&&!(fl&EDITOR_LINE_FLAG_UPDATE_CURSOR_POS)?EDITOR_LINE_FLAG_HAS_CURSOR:0)|(fl&EDITOR_LINE_FLAG_RENDER?EDITOR_LINE_FLAG_IN_WHITESPACE:0);
 	for (;j<l->l;j++){
 		uint8_t c=*(l->dt+j);
-		if ((fl&_EDITOR_LINE_FLAG_UPDATE_CURSOR_POS)&&n>=e->st._cx){
-			fl&=~_EDITOR_LINE_FLAG_UPDATE_CURSOR_POS;
+		if ((fl&EDITOR_LINE_FLAG_UPDATE_CURSOR_POS)&&n>=e->st._cx){
+			fl&=~EDITOR_LINE_FLAG_UPDATE_CURSOR_POS;
 			e->st.cx=j;
 			e->st._cx=n;
 		}
-		else if ((fl&_EDITOR_LINE_FLAG_HAS_CURSOR)&&e->st.cx==j){
-			fl&=~_EDITOR_LINE_FLAG_HAS_CURSOR;
+		else if ((fl&EDITOR_LINE_FLAG_HAS_CURSOR)&&e->st.cx==j){
+			fl&=~EDITOR_LINE_FLAG_HAS_CURSOR;
 			e->st._cx=n;
 		}
-		if ((fl&_EDITOR_LINE_FLAG_IN_WHITESPACE)&&(c==' '||c=='\t'||c=='\f'||c=='\v')){
+		if ((fl&EDITOR_LINE_FLAG_IN_WHITESPACE)&&(c==' '||c=='\t'||c=='\f'||c=='\v')){
 			l->_ws_c++;
 		}
 		else{
-			fl&=~_EDITOR_LINE_FLAG_IN_WHITESPACE;
+			fl&=~EDITOR_LINE_FLAG_IN_WHITESPACE;
 		}
 		if (c=='\t'){
 			if (fl&EDITOR_LINE_FLAG_RENDER){
@@ -50,11 +50,11 @@ void update_line(editor_t* e,uint32_t i,uint8_t fl){
 			n++;
 		}
 	}
-	if (fl&_EDITOR_LINE_FLAG_UPDATE_CURSOR_POS){
+	if (fl&EDITOR_LINE_FLAG_UPDATE_CURSOR_POS){
 		e->st.cx=l->l;
 		e->st._cx=n;
 	}
-	if (fl&_EDITOR_LINE_FLAG_HAS_CURSOR){
+	if (fl&EDITOR_LINE_FLAG_HAS_CURSOR){
 		e->st._cx=n;
 	}
 	if (!(fl&EDITOR_LINE_FLAG_RENDER)){

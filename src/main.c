@@ -59,10 +59,11 @@ int main(int argc,const char** argv){
 				fseek(f,0,SEEK_END);
 				uint32_t sz=ftell(f);
 				fseek(f,0,SEEK_SET);
-				char* dt=malloc(sz*sizeof(char));
+				char* dt=malloc((sz+1)*sizeof(char));
+				*(dt+sz)=0;
 				fread(dt,sizeof(char),sz,f);
 				fclose(f);
-				load_syntax(s,dt,sz);
+				load_syntax(&e,s,dt,sz);
 				free(dt);
 			}
 		} while (FindNextFileA(fh,&dt));
