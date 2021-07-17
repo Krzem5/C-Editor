@@ -1,0 +1,401 @@
+{
+	"name": "JSON",
+	"extensions": [
+		"json"
+	],
+	"data": [
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "link",
+				"index": "value"
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "link",
+				"index": "constant"
+			},
+			{
+				"type": "link",
+				"index": "number"
+			},
+			{
+				"type": "link",
+				"index": "string"
+			},
+			{
+				"type": "link",
+				"index": "array"
+			},
+			{
+				"type": "link",
+				"index": "object"
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "regex",
+				"regex": "\\[",
+				"groups": [],
+				"name": [],
+				"push": 10,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "regex",
+				"regex": "/\\*\\*(?!/)",
+				"groups": [],
+				"name": [],
+				"push": 11,
+				"pop": false
+			},
+			{
+				"type": "regex",
+				"regex": "/\\*",
+				"groups": [],
+				"name": [],
+				"push": 12,
+				"pop": false
+			},
+			{
+				"type": "regex",
+				"regex": "(//).*$\\n?",
+				"groups": {
+					"1": []
+				},
+				"name": [
+					"comment"
+				],
+				"push": -1,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "regex",
+				"regex": "\\b(?:true|false|null)\\b",
+				"groups": [],
+				"name": [
+					"constant"
+				],
+				"push": -1,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "regex",
+				"regex": "(-?)((?:0|[1-9]\\d*)(?:(?:(\\.)\\d+)(?:[eE][-+]?\\d+)?|(?:[eE][-+]?\\d+)))",
+				"groups": {
+					"1": [
+						"operator"
+					],
+					"2": [
+						"number"
+					],
+					"3": [
+						"separator"
+					]
+				},
+				"name": [],
+				"push": -1,
+				"pop": false
+			},
+			{
+				"type": "regex",
+				"regex": "(-?)(0|[1-9]\\d*)",
+				"groups": {
+					"1": [
+						"operator"
+					],
+					"2": [
+						"number"
+					]
+				},
+				"name": [],
+				"push": -1,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "regex",
+				"regex": "\\{",
+				"groups": [],
+				"name": [],
+				"push": 13,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "regex",
+				"regex": "\"",
+				"groups": [],
+				"name": [],
+				"push": 8,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "global_name",
+				"name": [
+					"string"
+				]
+			},
+			{
+				"type": "regex",
+				"regex": "\"",
+				"groups": [],
+				"name": [],
+				"push": -1,
+				"pop": true
+			},
+			{
+				"type": "link",
+				"index": "string-escape"
+			},
+			{
+				"type": "regex",
+				"regex": "$\\n?",
+				"groups": [],
+				"name": [
+					"invalid"
+				],
+				"push": -1,
+				"pop": true
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "regex",
+				"regex": "(?x:                # turn on extended mode\n  \\\\                # a literal backslash\n  (?:               # ...followed by...\n    [\"\\\\/bfnrt]     # one of these characters\n    |               # ...or...\n    u               # a u\n    [0-9a-fA-F]{4}  # and four hex digits\n  )\n)",
+				"groups": [],
+				"name": [
+					"escape"
+				],
+				"push": -1,
+				"pop": false
+			},
+			{
+				"type": "regex",
+				"regex": "\\\\.",
+				"groups": [],
+				"name": [
+					"invalid"
+				],
+				"push": -1,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "global_name",
+				"name": []
+			},
+			{
+				"type": "regex",
+				"regex": "\\]",
+				"groups": [],
+				"name": [],
+				"push": -1,
+				"pop": true
+			},
+			{
+				"type": "link",
+				"index": "value"
+			},
+			{
+				"type": "regex",
+				"regex": ",",
+				"groups": [],
+				"name": [
+					"separator"
+				],
+				"push": -1,
+				"pop": false
+			},
+			{
+				"type": "regex",
+				"regex": "[^\\s\\]]",
+				"groups": [],
+				"name": [
+					"invalid"
+				],
+				"push": -1,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "global_name",
+				"name": [
+					"comment"
+				]
+			},
+			{
+				"type": "regex",
+				"regex": "\\*/",
+				"groups": [],
+				"name": null,
+				"push": -1,
+				"pop": true
+			},
+			{
+				"type": "regex",
+				"regex": "^\\s*(\\*)(?!/)",
+				"groups": {
+					"1": []
+				},
+				"name": null,
+				"push": -1,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "global_name",
+				"name": [
+					"comment"
+				]
+			},
+			{
+				"type": "regex",
+				"regex": "\\*/",
+				"groups": [],
+				"name": null,
+				"push": -1,
+				"pop": true
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "global_name",
+				"name": []
+			},
+			{
+				"type": "regex",
+				"regex": "\\}",
+				"groups": [],
+				"name": [],
+				"push": -1,
+				"pop": true
+			},
+			{
+				"type": "regex",
+				"regex": "\"",
+				"groups": [],
+				"name": [],
+				"push": 14,
+				"pop": false
+			},
+			{
+				"type": "regex",
+				"regex": ":",
+				"groups": [],
+				"name": [
+					"separator"
+				],
+				"push": 15,
+				"pop": false
+			},
+			{
+				"type": "regex",
+				"regex": "[^\\s\\}]",
+				"groups": [],
+				"name": [
+					"invalid"
+				],
+				"push": -1,
+				"pop": false
+			}
+		],
+		[
+			{
+				"type": "rewind",
+				"value": 0
+			},
+			{
+				"type": "global_name",
+				"name": [
+					"string"
+				]
+			},
+			{
+				"type": "link",
+				"index": "inside-string"
+			}
+		],
+		[
+			{
+				"type": "link",
+				"index": "comments"
+			},
+			{
+				"type": "regex",
+				"regex": ",|\\s?(?=\\})",
+				"groups": [],
+				"name": [
+					"invalid"
+				],
+				"push": -1,
+				"pop": true
+			},
+			{
+				"type": "regex",
+				"regex": "(?=\\S)",
+				"groups": [],
+				"name": null,
+				"push": -1,
+				"pop": false
+			}
+		]
+	]
+}

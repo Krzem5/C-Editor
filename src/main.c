@@ -1,4 +1,5 @@
 #ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS 1
 #include <windows.h>
 #include <conio.h>
 #endif
@@ -27,6 +28,46 @@ int main(int argc,const char** argv){
 	editor_t e;
 	init_editor(&e);
 	set_window_size(&e,sbi.srWindow.Right+1,sbi.srWindow.Bottom+1);
+	char bf[4096];
+	uint16_t i=(uint16_t)GetModuleFileNameA(GetModuleHandleA(NULL),bf,4096);
+	while (bf[i]!='/'&&bf[i]!='\\'){
+		i--;
+	}
+	bf[i+1]='d';
+	bf[i+2]='a';
+	bf[i+3]='t';
+	bf[i+4]='a';
+	bf[i+5]='/';
+	bf[i+6]='*';
+	bf[i+7]=0;
+	i+=6;
+	WIN32_FIND_DATAA dt;
+	HANDLE fh=FindFirstFileA(bf,&dt);
+	if (fh!=INVALID_HANDLE_VALUE){
+		do{
+			if (!(dt.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)){
+				uint16_t j=i;
+				char* nm=dt.cFileName;
+				while (*nm){
+					bf[j]=*nm;
+					j++;
+					nm++;
+				}
+				bf[j]=0;
+				editor_syntax_t* s=create_syntax(&e);
+				FILE* f=fopen(bf,"rb");
+				fseek(f,0,SEEK_END);
+				uint32_t sz=ftell(f);
+				fseek(f,0,SEEK_SET);
+				char* dt=malloc(sz*sizeof(char));
+				fread(dt,sizeof(char),sz,f);
+				fclose(f);
+				load_syntax(s,dt,sz);
+				free(dt);
+			}
+		} while (FindNextFileA(fh,&dt));
+		FindClose(fh);
+	}
 	if (argc>1){
 		open_file(&e,argv[1]);
 	}

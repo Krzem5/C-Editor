@@ -59,6 +59,13 @@ typedef struct __EDITOR_STATE{
 
 
 
+typedef struct __EDITOR_SYNTAX{
+	char nm[256];
+	uint8_t nml;
+} editor_syntax_t;
+
+
+
 typedef struct __EDITOR{
 	char fp[4096];
 	uint16_t fpl;
@@ -66,6 +73,8 @@ typedef struct __EDITOR{
 	editor_state_t st;
 	uint32_t w;
 	uint32_t h;
+	uint16_t sl;
+	editor_syntax_t** s;
 	uint32_t ll;
 	editor_line_t** l;
 	uint8_t _ll_sz;
@@ -81,11 +90,19 @@ void set_window_size(editor_t* e,uint32_t w,uint32_t h);
 
 
 
+editor_syntax_t* create_syntax(editor_t* e);
+
+
+
+void load_syntax(editor_syntax_t* s,const char* dt,uint32_t dtl);
+
+
+
 void open_file(editor_t* e,const char* fp);
 
 
 
-void render_line(editor_t* e,uint32_t i,uint8_t fl);
+void update_line(editor_t* e,uint32_t i,uint8_t fl);
 
 
 

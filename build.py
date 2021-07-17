@@ -17,9 +17,15 @@ if (os.path.exists("build")):
 		for f in fl:
 			os.remove(r+f)
 	for k in dl:
-		os.rmdir(k)
+		if (k!="build/data"):
+			os.rmdir(k)
 else:
 	os.mkdir("build")
+if (not os.path.exists("build/data")):
+	os.mkdir("build/data")
+for k in os.listdir("data"):
+	with open("data/"+k,"rb") as rf,open("build/data/"+k,"wb") as wf:
+		wf.write(rf.read())
 if (os.name=="nt"):
 	cd=os.getcwd()
 	os.chdir("build")
