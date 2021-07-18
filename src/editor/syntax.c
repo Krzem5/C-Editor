@@ -343,6 +343,65 @@ _check_next_scope:;
 		if (b_sc->dt.a.l<EDITOR_SYNTAX_MAX_SCOPE_COUNT){
 			o->b_sc.dt[b_sc->dt.a.l]=EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX;
 		}
+		json_object_t* dt=_get_by_key(&json,"data");
+		if (dt){
+			if (dt->t!=JSON_OBJECT_TYPE_ARRAY){
+				editor_error_t* err=create_error(e);
+				err->tl=_copy_str(err->t,"JSON Schema Error");
+				err->t[err->tl]=0;
+				char bf[4096]="The \"data\" Property Must be an Array:\n";
+				uint16_t i=0;
+				while (bf[i]){
+					i++;
+				}
+				i+=_copy_str(bf+i,f_nm);
+				bf[i+_copy_str(bf+i,":<root>.data")]=0;
+				write_error_body(err,bf);
+				_free_json(&json);
+				return;
+			}
+			if (dt->dt.a.l>UINT16_MAX){
+				editor_error_t* err=create_error(e);
+				err->tl=_copy_str(err->t,"JSON Schema Error");
+				err->t[err->tl]=0;
+				char bf[4096]="The \"data\" Property Must Have no More Than ";
+				uint16_t i=0;
+				while (bf[i]){
+					i++;
+				}
+				WRITE_INT(UINT16_MAX,bf,i);
+				i+=_copy_str(bf+i," Elements:\n");
+				i+=_copy_str(bf+i,f_nm);
+				bf[i+_copy_str(bf+i,":<root>.data")]=0;
+				write_error_body(err,bf);
+				_free_json(&json);
+				return;
+			}
+			o->cl=dt->dt.a.l;
+			o->c=malloc(o->cl*sizeof(editor_syntax_context_t));
+			for (uint16_t i=0;i<o->cl;i++){
+				json_object_t* ctx=dt->dt.a.dt+i;
+				editor_syntax_context_t* c=o->c+i;
+				if (ctx->t==JSON_OBJECT_TYPE_ARRAY){
+					editor_error_t* err=create_error(e);
+					err->tl=_copy_str(err->t,"JSON Schema Error");
+					err->t[err->tl]=0;
+					char bf[4096]="A Context Must be an Array:\n";
+					uint16_t j=0;
+					while (bf[j]){
+						j++;
+					}
+					j+=_copy_str(bf+j,f_nm);
+					j+=_copy_str(bf+j,":<root>.data[");
+					WRITE_INT(i,bf,j);
+					bf[j]=']';
+					bf[j+1]=0;
+					write_error_body(err,bf);
+					_free_json(&json);
+					return;
+				}
+			}
+		}
 		_free_json(&json);
 	}
 }
