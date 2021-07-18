@@ -1,0 +1,7 @@
+{
+	"name": "Plain Text",
+	"extensions": null,
+	"base_scope": [
+		"text"
+	]
+}

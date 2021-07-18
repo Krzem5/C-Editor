@@ -3,6 +3,9 @@
 	"extensions": [
 		"json"
 	],
+	"base_scope": [
+		"text"
+	],
 	"data": [
 		[
 			{
@@ -49,7 +52,7 @@
 				"type": "regex",
 				"regex": "\\[",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": 10,
 				"pop": false
 			}
@@ -63,7 +66,7 @@
 				"type": "regex",
 				"regex": "/\\*\\*(?!/)",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": 11,
 				"pop": false
 			},
@@ -71,7 +74,7 @@
 				"type": "regex",
 				"regex": "/\\*",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": 12,
 				"pop": false
 			},
@@ -81,7 +84,7 @@
 				"groups": {
 					"1": []
 				},
-				"name": [
+				"scope": [
 					"comment"
 				],
 				"push": -1,
@@ -97,7 +100,7 @@
 				"type": "regex",
 				"regex": "\\b(?:true|false|null)\\b",
 				"groups": [],
-				"name": [
+				"scope": [
 					"constant"
 				],
 				"push": -1,
@@ -123,7 +126,7 @@
 						"separator"
 					]
 				},
-				"name": [],
+				"scope": [],
 				"push": -1,
 				"pop": false
 			},
@@ -138,7 +141,7 @@
 						"number"
 					]
 				},
-				"name": [],
+				"scope": [],
 				"push": -1,
 				"pop": false
 			}
@@ -152,7 +155,7 @@
 				"type": "regex",
 				"regex": "\\{",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": 13,
 				"pop": false
 			}
@@ -166,15 +169,15 @@
 				"type": "regex",
 				"regex": "\"",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": 8,
 				"pop": false
 			}
 		],
 		[
 			{
-				"type": "global_name",
-				"name": [
+				"type": "scope",
+				"scope": [
 					"string"
 				]
 			},
@@ -182,7 +185,7 @@
 				"type": "regex",
 				"regex": "\"",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": -1,
 				"pop": true
 			},
@@ -194,7 +197,7 @@
 				"type": "regex",
 				"regex": "$\\n?",
 				"groups": [],
-				"name": [
+				"scope": [
 					"invalid"
 				],
 				"push": -1,
@@ -210,7 +213,7 @@
 				"type": "regex",
 				"regex": "(?x:                # turn on extended mode\n  \\\\                # a literal backslash\n  (?:               # ...followed by...\n    [\"\\\\/bfnrt]     # one of these characters\n    |               # ...or...\n    u               # a u\n    [0-9a-fA-F]{4}  # and four hex digits\n  )\n)",
 				"groups": [],
-				"name": [
+				"scope": [
 					"escape"
 				],
 				"push": -1,
@@ -220,7 +223,7 @@
 				"type": "regex",
 				"regex": "\\\\.",
 				"groups": [],
-				"name": [
+				"scope": [
 					"invalid"
 				],
 				"push": -1,
@@ -233,14 +236,14 @@
 				"index": "comments"
 			},
 			{
-				"type": "global_name",
-				"name": []
+				"type": "scope",
+				"scope": []
 			},
 			{
 				"type": "regex",
 				"regex": "\\]",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": -1,
 				"pop": true
 			},
@@ -252,7 +255,7 @@
 				"type": "regex",
 				"regex": ",",
 				"groups": [],
-				"name": [
+				"scope": [
 					"separator"
 				],
 				"push": -1,
@@ -262,7 +265,7 @@
 				"type": "regex",
 				"regex": "[^\\s\\]]",
 				"groups": [],
-				"name": [
+				"scope": [
 					"invalid"
 				],
 				"push": -1,
@@ -271,8 +274,8 @@
 		],
 		[
 			{
-				"type": "global_name",
-				"name": [
+				"type": "scope",
+				"scope": [
 					"comment"
 				]
 			},
@@ -280,7 +283,7 @@
 				"type": "regex",
 				"regex": "\\*/",
 				"groups": [],
-				"name": null,
+				"scope": null,
 				"push": -1,
 				"pop": true
 			},
@@ -290,15 +293,15 @@
 				"groups": {
 					"1": []
 				},
-				"name": null,
+				"scope": null,
 				"push": -1,
 				"pop": false
 			}
 		],
 		[
 			{
-				"type": "global_name",
-				"name": [
+				"type": "scope",
+				"scope": [
 					"comment"
 				]
 			},
@@ -306,7 +309,7 @@
 				"type": "regex",
 				"regex": "\\*/",
 				"groups": [],
-				"name": null,
+				"scope": null,
 				"push": -1,
 				"pop": true
 			}
@@ -317,14 +320,14 @@
 				"index": "comments"
 			},
 			{
-				"type": "global_name",
-				"name": []
+				"type": "scope",
+				"scope": []
 			},
 			{
 				"type": "regex",
 				"regex": "\\}",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": -1,
 				"pop": true
 			},
@@ -332,7 +335,7 @@
 				"type": "regex",
 				"regex": "\"",
 				"groups": [],
-				"name": [],
+				"scope": [],
 				"push": 14,
 				"pop": false
 			},
@@ -340,7 +343,7 @@
 				"type": "regex",
 				"regex": ":",
 				"groups": [],
-				"name": [
+				"scope": [
 					"separator"
 				],
 				"push": 15,
@@ -350,7 +353,7 @@
 				"type": "regex",
 				"regex": "[^\\s\\}]",
 				"groups": [],
-				"name": [
+				"scope": [
 					"invalid"
 				],
 				"push": -1,
@@ -363,8 +366,8 @@
 				"value": 0
 			},
 			{
-				"type": "global_name",
-				"name": [
+				"type": "scope",
+				"scope": [
 					"string"
 				]
 			},
@@ -382,7 +385,7 @@
 				"type": "regex",
 				"regex": ",|\\s?(?=\\})",
 				"groups": [],
-				"name": [
+				"scope": [
 					"invalid"
 				],
 				"push": -1,
@@ -392,7 +395,7 @@
 				"type": "regex",
 				"regex": "(?=\\S)",
 				"groups": [],
-				"name": null,
+				"scope": null,
 				"push": -1,
 				"pop": false
 			}

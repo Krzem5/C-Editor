@@ -4,14 +4,12 @@
 
 
 
-#define _INT_TO_STR(x) #x
-#define INT_TO_STR(x) _INT_TO_STR(x)
 #define STR_LEN(x) (sizeof((x))/sizeof(char)-1)
 #define WRITE_INT(v,o,o_sz) \
 	do{ \
 		char __bf[10]; \
 		uint8_t __bfi=0; \
-		uint32_t __v=(v); \
+		uint32_t __v=(uint32_t)(v); \
 		do{ \
 			__bf[__bfi]=__v%10; \
 			__bfi++; \

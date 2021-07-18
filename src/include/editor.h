@@ -32,6 +32,17 @@
 #define EDITOR_LINE_FLAG_RENDER 1
 #define EDITOR_SETTINGS_BG_COLOR "\x1b[48;2;24;25;21m"
 #define EDITOR_SETTINGS_FG_COLOR "\x1b[38;2;191;191;189m"
+#define EDITOR_SYNTAX_CONTEXT_FLAG_POP 4
+#define EDITOR_SYNTAX_CONTEXT_GET_CAPTURE_COUNT(c) ((c)->fl>>3)
+#define EDITOR_SYNTAX_CONTEXT_GET_TYPE(c) ((c)->fl&3)
+#define EDITOR_SYNTAX_CONTEXT_SET_CAPTURE_COUNT(c) ((c)<<3)
+#define EDITOR_SYNTAX_CONTEXT_TYPE_LINK 1
+#define EDITOR_SYNTAX_CONTEXT_TYPE_REGEX 2
+#define EDITOR_SYNTAX_CONTEXT_TYPE_REWIND 3
+#define EDITOR_SYNTAX_CONTEXT_TYPE_SCOPE 0
+#define EDITOR_SYNTAX_MAX_SCOPE_COUNT 8
+#define EDITOR_SYNTAX_NAME_LENGTH 32
+#define EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX 0
 #define EDITOR_TAB_SIZE 4
 #define EDITOR_UI_BG_COLOR "\x1b[48;2;40;41;35m"
 #define EDITOR_UI_BG_COLOR_HIGHLIGHT "\x1b[48;2;62;61;50m"
@@ -47,6 +58,45 @@
 
 
 
+extern const char* SYNTAX_SCOPE_NAME_LIST[];
+
+
+
+typedef struct __EDITOR_SYNTAX_FILE_EXTENSION{
+	char dt[256];
+	uint8_t l;
+} editor_syntax_file_extension_t;
+
+
+
+typedef struct __EDITOR_SYNTAX_SCOPE{
+	uint8_t dt[EDITOR_SYNTAX_MAX_SCOPE_COUNT];
+} editor_syntax_scope_t;
+
+
+
+typedef struct __EDITOR_SYNTAX_CONTEXT{
+	uint8_t fl;
+	char* rgx;
+	editor_syntax_scope_t sc;
+	editor_syntax_scope_t* c;
+	uint16_t p;
+} editor_syntax_context_t;
+
+
+
+typedef struct __EDITOR_SYNTAX{
+	char nm[EDITOR_SYNTAX_NAME_LENGTH+1];
+	uint8_t nml;
+	uint8_t el;
+	editor_syntax_file_extension_t* e;
+	editor_syntax_scope_t b_sc;
+	uint16_t cl;
+	editor_syntax_context_t* c;
+} editor_syntax_t;
+
+
+
 typedef struct __EDITOR_LINE{
 	uint32_t l;
 	char* dt;
@@ -57,21 +107,18 @@ typedef struct __EDITOR_LINE{
 
 
 
-typedef struct __EDITOR_STATE{
+typedef struct __EDITOR_FILE{
+	char fp[4096];
+	uint16_t fpl;
 	uint32_t cx;
 	uint32_t cy;
 	uint32_t l_off;
-	uint32_t w;
-	uint32_t h;
+	uint32_t ll;
+	editor_line_t** l;
+	editor_syntax_t* s;
 	uint32_t _cx;
-} editor_state_t;
-
-
-
-typedef struct __EDITOR_SYNTAX{
-	char nm[256];
-	uint8_t nml;
-} editor_syntax_t;
+	uint8_t _ll_sz;
+} editor_file_t;
 
 
 
@@ -84,30 +131,15 @@ typedef struct __EDITOR_ERROR{
 
 
 typedef struct __EDITOR{
-	char fp[4096];
-	uint16_t fpl;
 	uint8_t fl;
-	editor_state_t st;
+	uint32_t w;
+	uint32_t h;
+	editor_file_t f;
 	uint16_t el;
 	editor_error_t** e;
 	uint16_t sl;
 	editor_syntax_t** s;
-	uint32_t ll;
-	editor_line_t** l;
-	uint8_t _ll_sz;
 } editor_t;
-
-
-
-void init_editor(editor_t* e);
-
-
-
-void set_window_size(editor_t* e,uint32_t w,uint32_t h);
-
-
-
-editor_syntax_t* create_syntax(editor_t* e);
 
 
 
@@ -115,11 +147,19 @@ editor_error_t* create_error(editor_t* e);
 
 
 
-void load_syntax(editor_t* e,editor_syntax_t* s,const char* dt,uint32_t dtl);
+editor_syntax_t* create_syntax(editor_t* e);
 
 
 
-void write_error_body(editor_error_t* e,const char* dt);
+void free_editor(editor_t* e);
+
+
+
+void init_editor(editor_t* e);
+
+
+
+void load_syntax(editor_t* e,editor_syntax_t* s,const char* dt,uint32_t dtl,const char* fp);
 
 
 
@@ -127,7 +167,11 @@ void open_file(editor_t* e,const char* fp);
 
 
 
-void update_line(editor_t* e,uint32_t i,uint8_t fl);
+void render_editor(editor_t* e);
+
+
+
+void set_window_size(editor_t* e,uint32_t w,uint32_t h);
 
 
 
@@ -135,11 +179,11 @@ void type_key(editor_t* e,uint16_t k);
 
 
 
-void render_editor(editor_t* e);
+void update_line(editor_t* e,uint32_t i,uint8_t fl);
 
 
 
-void free_editor(editor_t* e);
+void write_error_body(editor_error_t* e,const char* dt);
 
 
 

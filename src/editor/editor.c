@@ -7,27 +7,30 @@
 
 
 void init_editor(editor_t* e){
-	e->fp[0]=0;
-	e->fpl=0;
 	e->fl=0;
-	e->st.cx=0;
-	e->st.cy=0;
-	e->st.w=0;
-	e->st.h=0;
-	e->st.l_off=0;
+	e->w=0;
+	e->h=0;
+	e->f.fp[0]=0;
+	e->f.fpl=0;
+	e->f.cx=0;
+	e->f.cy=0;
+	e->f.l_off=0;
+	e->f.ll=0;
+	e->f.l=NULL;
+	e->f.s=NULL;
+	e->f._cx=0;
+	e->f._ll_sz=0;
 	e->el=0;
 	e->e=NULL;
 	e->sl=0;
 	e->s=NULL;
-	e->ll=0;
-	e->l=NULL;
 }
 
 
 
 void set_window_size(editor_t* e,uint32_t w,uint32_t h){
-	e->st.w=w;
-	e->st.h=h;
+	e->w=w;
+	e->h=h;
 }
 
 
@@ -95,28 +98,28 @@ void write_error_body(editor_error_t* e,const char* dt){
 
 
 void render_editor(editor_t* e){
-	char* bf=malloc((STR_LEN("\x1b[?12l\x1b[H"EDITOR_SETTINGS_BG_COLOR"\x1b[0K")+e->fpl)*sizeof(char));
+	char* bf=malloc((STR_LEN("\x1b[?12l\x1b[H"EDITOR_SETTINGS_BG_COLOR"\x1b[0K")+e->f.fpl)*sizeof(char));
 	uint32_t sz=_copy_str(bf,"\x1b[?12l\x1b[H"EDITOR_SETTINGS_BG_COLOR"\x1b[0K");
-	sz+=_copy_str(bf+sz,e->fp);
+	sz+=_copy_str(bf+sz,e->f.fp);
 	uint32_t i=0;
-	for (;i<(e->ll<e->st.h-2?e->ll:e->st.h-2);i++){
-		editor_line_t* l=*(e->l+e->st.l_off+i);
+	for (;i<(e->f.ll<e->h-2?e->f.ll:e->h-2);i++){
+		editor_line_t* l=*(e->f.l+e->f.l_off+i);
 		bf=realloc(bf,(sz+l->_bfl)*sizeof(char));
 		for (uint32_t j=0;j<l->_bfl;j++){
 			*(bf+sz)=*(l->_bf+j);
 			sz++;
 		}
 	}
-	for (;i<e->st.h-2;i++){
+	for (;i<e->h-2;i++){
 		bf=realloc(bf,(sz+STR_LEN("\n"EDITOR_UI_BG_COLOR"\x1b[0K"))*sizeof(char));
 		sz+=_copy_str(bf+sz,"\n"EDITOR_UI_BG_COLOR"\x1b[0K");
 	}
 	if (e->el){
 		editor_error_t* err=*(e->e+e->el-1);
-		i=(e->st.h-EDITOR_ERROR_HEIGHT-4)>>1;
-		uint32_t j=(e->st.w-EDITOR_ERROR_WIDTH-2)>>1;
+		i=(e->h-EDITOR_ERROR_HEIGHT-4)>>1;
+		uint32_t j=(e->w-EDITOR_ERROR_WIDTH-2)>>1;
 		uint32_t w=EDITOR_ERROR_WIDTH+2;
-		bf=realloc(bf,(sz+STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"╭╮")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+STR_LEN("─")*(EDITOR_ERROR_WIDTH-err->tl)+err->tl+(STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"│"EDITOR_UI_ERROR_FG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"│")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+EDITOR_ERROR_WIDTH)*EDITOR_ERROR_HEIGHT/***/+STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"├┤")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+STR_LEN("─")*EDITOR_ERROR_WIDTH/***/+STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"│"EDITOR_UI_ERROR_BUTTON_BG_COLOR EDITOR_UI_ERROR_BUTTON_FG_COLOR"OK"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"│")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+STR_LEN(" ")*(EDITOR_ERROR_WIDTH-STR_LEN("OK"))/***/+STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"╰╯")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+STR_LEN("─")*EDITOR_ERROR_WIDTH)*sizeof(char));
+		bf=realloc(bf,(sz+STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"╭╮")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+STR_LEN("─")*(EDITOR_ERROR_WIDTH-err->tl)+err->tl+(STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"│"EDITOR_UI_ERROR_FG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"│")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+EDITOR_ERROR_WIDTH)*EDITOR_ERROR_HEIGHT+STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"├┤")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+STR_LEN("─")*EDITOR_ERROR_WIDTH+STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"│"EDITOR_UI_ERROR_BUTTON_BG_COLOR EDITOR_UI_ERROR_BUTTON_FG_COLOR"OK"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"│")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+STR_LEN(" ")*(EDITOR_ERROR_WIDTH-STR_LEN("OK"))+STR_LEN("\x1b[;H"EDITOR_UI_ERROR_BG_COLOR EDITOR_UI_ERROR_BORDER_COLOR"╰╯")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*2+STR_LEN("─")*EDITOR_ERROR_WIDTH)*sizeof(char));
 		*(bf+sz)='\x1b';
 		*(bf+sz+1)='[';
 		sz+=2;
@@ -217,20 +220,30 @@ void render_editor(editor_t* e){
 		}
 		sz+=_copy_str(bf+sz,"╯");
 	}
-	bf=realloc(bf,(sz+STR_LEN("\x1b[;0H"EDITOR_SETTINGS_FG_COLOR EDITOR_SETTINGS_BG_COLOR"\x1b[0KLine , Column \x1b[0m\x1b[;H")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*5)*sizeof(char));
+	bf=realloc(bf,(sz+STR_LEN("\x1b[;1H"EDITOR_SETTINGS_FG_COLOR EDITOR_SETTINGS_BG_COLOR"\x1b[0KLine , Column \x1b[;H\x1b[0m\x1b[;H")+CURSOR_CONTROL_MAX_POSITION_STRING_LENGTH*7+EDITOR_SYNTAX_NAME_LENGTH)*sizeof(char));
 	*(bf+sz)='\x1b';
 	*(bf+sz+1)='[';
 	sz+=2;
-	WRITE_INT(e->st.h,bf,sz);
-	sz+=_copy_str(bf+sz,";0H"EDITOR_SETTINGS_FG_COLOR EDITOR_SETTINGS_BG_COLOR"\x1b[0KLine ");
-	WRITE_INT(e->st.cy+1,bf,sz);
+	WRITE_INT(e->h,bf,sz);
+	sz+=_copy_str(bf+sz,";1H"EDITOR_SETTINGS_FG_COLOR EDITOR_SETTINGS_BG_COLOR"\x1b[0KLine ");
+	WRITE_INT(e->f.cy+1,bf,sz);
 	sz+=_copy_str(bf+sz,", Column ");
-	WRITE_INT(e->st.cx+1,bf,sz);
-	sz+=_copy_str(bf+sz,"\x1b[0m\x1b[");
-	WRITE_INT(e->st.cy-e->st.l_off+2,bf,sz);
+	WRITE_INT(e->f.cx+1,bf,sz);
+	*(bf+sz)='\x1b';
+	*(bf+sz+1)='[';
+	sz+=2;
+	WRITE_INT(e->h,bf,sz);
 	*(bf+sz)=';';
 	sz++;
-	WRITE_INT(e->st._cx+e->_ll_sz+3,bf,sz);
+	WRITE_INT(e->w-e->f.s->nml+1,bf,sz);
+	*(bf+sz)='H';
+	sz++;
+	sz+=_copy_str(bf+sz,e->f.s->nm);
+	sz+=_copy_str(bf+sz,"\x1b[0m\x1b[");
+	WRITE_INT(e->f.cy-e->f.l_off+2,bf,sz);
+	*(bf+sz)=';';
+	sz++;
+	WRITE_INT(e->f._cx+e->f._ll_sz+3,bf,sz);
 	*(bf+sz)='H';
 	fwrite(bf,sizeof(char),sz+1,stdout);
 	free(bf);
@@ -238,6 +251,16 @@ void render_editor(editor_t* e){
 
 
 void free_editor(editor_t* e){
+	for (uint32_t i=0;i<e->f.ll;i++){
+		editor_line_t* l=*(e->f.l+i);
+		if (l->dt){
+			free(l->dt);
+		}
+		free(l);
+	}
+	if (e->f.l){
+		free(e->f.l);
+	}
 	for (uint32_t i=0;i<e->el;i++){
 		free(*(e->e+i));
 	}
@@ -249,15 +272,5 @@ void free_editor(editor_t* e){
 	}
 	if (e->s){
 		free(e->s);
-	}
-	for (uint32_t i=0;i<e->ll;i++){
-		editor_line_t* l=*(e->l+i);
-		if (l->dt){
-			free(l->dt);
-		}
-		free(l);
-	}
-	if (e->l){
-		free(e->l);
 	}
 }

@@ -10,7 +10,7 @@
 	"keyword.operator": "operator",
 	"punctuation.accessor": "accessor",
 	"punctuation.definition.annotation": "annotation",
-	"punctuation.definition.keyword": "definition-keyword",
+	"punctuation.definition.keyword": "definition_keyword",
 	"punctuation.definition.variable": "variable",
 	"punctuation.separator": "separator",
 	"punctuation.terminator": "separator",

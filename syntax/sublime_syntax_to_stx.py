@@ -30,7 +30,7 @@ def _parse_context(ctx,nm_m,p_dt,dt_l):
 	inc_p=True
 	for k in dt:
 		if ("meta_scope" in k):
-			o.append({"type":"global_name","name":_parse_scope(k["meta_scope"])})
+			o.append({"type":"scope","scope":_parse_scope(k["meta_scope"])})
 			i=False
 		elif ("meta_include_prototype" in k):
 			inc_p=False
@@ -39,7 +39,7 @@ def _parse_context(ctx,nm_m,p_dt,dt_l):
 				o.append({"type":"rewind","value":(0 if k["clear_scopes"]==True else k["clear_scopes"])})
 			i=False
 		elif ("match" in k):
-			o.append({"type":"regex","regex":k["match"],"groups":({e:_parse_scope(ev) for e,ev in k["captures"].items()} if "captures" in k else []),"name":(_parse_scope(k["scope"]) if "scope" in k else None),"push":((nm_m.index(k["push"]) if type(k["push"])==str else len(nm_m)) if "push" in k else -1),"pop":(k["pop"] if "pop" in k else False)})
+			o.append({"type":"regex","regex":k["match"],"groups":({e:_parse_scope(ev) for e,ev in k["captures"].items()} if "captures" in k else []),"scope":(_parse_scope(k["scope"]) if "scope" in k else None),"push":((nm_m.index(k["push"]) if type(k["push"])==str else len(nm_m)) if "push" in k else -1),"pop":(k["pop"] if "pop" in k else False)})
 			if ("push" in k and type(k["push"])!=str):
 				nm=f"__anonymous{len(nm_m)}__"
 				dt_l[nm]=k["push"]
@@ -59,7 +59,7 @@ with open(SUBLIME_SYNTAX_FILE_PATH,"rb") as f:
 	dt=yaml.safe_load(f.read())
 if ("extends" in dt and len(dt["extends"])>0):
 	raise RuntimeError("File Contains Other Syntaxes")
-o={"name":dt["name"],"extensions":dt["file_extensions"],"data":[]}
+o={"name":dt["name"],"extensions":dt["file_extensions"],"base_scope":["text"],"data":[]}
 nm_m=["main"]
 for k in dt["contexts"]:
 	if (k!="main" and k!="prototype"):

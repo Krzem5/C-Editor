@@ -63,7 +63,7 @@ int main(int argc,const char** argv){
 				*(dt+sz)=0;
 				fread(dt,sizeof(char),sz,f);
 				fclose(f);
-				load_syntax(&e,s,dt,sz);
+				load_syntax(&e,s,dt,sz,bf);
 				free(dt);
 			}
 		} while (FindNextFileA(fh,&dt));
