@@ -36,17 +36,17 @@ def _parse_context(ctx,nm_m,p_dt,dt_l):
 			inc_p=False
 		elif ("clear_scopes" in k):
 			if (k["clear_scopes"]==True or k["clear_scopes"]>0):
-				o.append({"type":"rewind","value":(0 if k["clear_scopes"]==True else k["clear_scopes"])})
+				o.append({"type":"rewind","count":(0 if k["clear_scopes"]==True else k["clear_scopes"])})
 			i=False
 		elif ("match" in k):
-			o.append({"type":"regex","regex":k["match"],"groups":({e:_parse_scope(ev) for e,ev in k["captures"].items()} if "captures" in k else []),"scope":(_parse_scope(k["scope"]) if "scope" in k else None),"push":((nm_m.index(k["push"]) if type(k["push"])==str else len(nm_m)) if "push" in k else -1),"pop":(k["pop"] if "pop" in k else False)})
+			o.append({"type":"regex","regex":k["match"],"groups":({e:_parse_scope(ev) for e,ev in k["captures"].items()} if "captures" in k else {}),"scope":(_parse_scope(k["scope"]) if "scope" in k else None),"push":((nm_m.index(k["push"]) if type(k["push"])==str else len(nm_m)) if "push" in k else -1),"pop":(k["pop"] if "pop" in k else False)})
 			if ("push" in k and type(k["push"])!=str):
 				nm=f"__anonymous{len(nm_m)}__"
 				dt_l[nm]=k["push"]
 				nm_m.append(nm)
 			i=False
 		elif ("include" in k):
-			o.append({"type":"link","index":k["include"]})
+			o.append({"type":"link","index":nm_m.index(k["include"])})
 		else:
 			print(k)
 	if (p_dt is not None and inc_p is True):

@@ -232,6 +232,7 @@ void type_key(editor_t* e,uint16_t k){
 	else if (k==EDITOR_KEY_CTRL_HOME){
 		if (e->f.cy){
 			uint32_t l_cy=e->f.cy;
+			e->f.cx=0;
 			e->f.cy=0;
 			e->f.l_off=0;
 			update_line(e,0,EDITOR_LINE_FLAG_RENDER);
@@ -242,6 +243,7 @@ void type_key(editor_t* e,uint16_t k){
 		if (e->f.cy<e->f.ll-1){
 			uint32_t l_cy=e->f.cy;
 			e->f.cy=e->f.ll-1;
+			e->f.cx=(*(e->f.l+e->f.cy))->l;
 			e->f.l_off=e->f.ll-e->h+2;
 			update_line(e,l_cy,EDITOR_LINE_FLAG_RENDER);
 			update_line(e,e->f.cy,EDITOR_LINE_FLAG_RENDER);

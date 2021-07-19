@@ -37,10 +37,10 @@
 #define EDITOR_SETTINGS_FG_COLOR "\x1b[38;2;191;191;189m"
 #define EDITOR_SYNTAX_CONTEXT_TYPE_LINK 0
 #define EDITOR_SYNTAX_CONTEXT_TYPE_REGEX 1
-#define EDITOR_SYNTAX_CONTEXT_TYPE_REWIND 2
-#define EDITOR_SYNTAX_CONTEXT_FLAG_POP 4
+#define EDITOR_SYNTAX_CONTEXT_FLAG_POP 2
 #define EDITOR_SYNTAX_MAX_SCOPE_COUNT 8
 #define EDITOR_SYNTAX_NAME_LENGTH 32
+#define EDITOR_SYNTAX_REWIND_ALL UINT16_MAX
 #define EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX 0
 #define EDITOR_TAB_SIZE 4
 #define EDITOR_UI_BG_COLOR "\x1b[48;2;40;41;35m"
@@ -85,8 +85,7 @@ typedef struct __EDITOR_SYNTAX_CONTEXT_ELEMENT_DATA_REGEX{
 
 typedef union __EDITOR_SYNTAX_CONTEXT_ELEMENT_DATA{
 	uint16_t l;
-	editor_syntax_context_element_data_regex_t m;
-	uint16_t r;
+	editor_syntax_context_element_data_regex_t* m;
 } editor_syntax_context_element_data_t;
 
 
@@ -100,6 +99,7 @@ typedef struct __EDITOR_SYNTAX_CONTEXT_ELEMENT{
 
 typedef struct __EDITOR_SYNTAX_CONTEXT{
 	uint16_t l;
+	uint16_t rw;
 	editor_syntax_scope_t sc;
 	editor_syntax_context_element_t* e;
 } editor_syntax_context_t;

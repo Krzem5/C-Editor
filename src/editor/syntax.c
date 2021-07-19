@@ -3,6 +3,7 @@
 #endif
 #include <editor.h>
 #include <_editor_internal.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +39,59 @@ const char* SYNTAX_SCOPE_NAME_LIST[]={
 	"unquoted_string",
 	"variable"
 };
+
+
+
+void _schema_error(editor_t* e,const char* str,...){
+	editor_error_t* err=create_error(e);
+	va_list va;
+	va_start(va,str);
+	char bf[4096];
+	uint16_t i=0;
+	while (*str){
+		if (*str=='%'){
+			str++;
+			if (*str=='s'){
+				i+=_copy_str(bf+i,va_arg(va,const char*));
+			}
+			else if (*str=='i'){
+				WRITE_INT(va_arg(va,uint32_t),bf,i);
+			}
+			else{
+				bf[i]='%';
+				bf[i+1]=*str;
+				i++;
+			}
+			str++;
+			continue;
+		}
+		bf[i]=*str;
+		i++;
+		str++;
+	}
+	va_end(va);
+	bf[i]=0;
+	err->tl=_copy_str(err->t,"JSON Schema Error");
+	err->t[err->tl]=0;
+	write_error_body(err,bf);
+}
+
+
+
+uint8_t _find_scope(const char* nm){
+	for (uint8_t i=1;i<sizeof(SYNTAX_SCOPE_NAME_LIST)/sizeof(SYNTAX_SCOPE_NAME_LIST[0]);i++){
+		uint8_t j=-1;
+		do{
+			j++;
+			if (*(SYNTAX_SCOPE_NAME_LIST[i]+j)!=*(nm+j)){
+				goto _check_next_scope;
+			}
+		} while (*(SYNTAX_SCOPE_NAME_LIST[i]+j));
+		return i;
+_check_next_scope:;
+	}
+	return EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX;
+}
 
 
 
@@ -90,65 +144,23 @@ void load_syntax(editor_t* e,editor_syntax_t* o,const char* dt,uint32_t dtl,cons
 			return;
 		}
 		if (json.t!=JSON_OBJECT_TYPE_MAP){
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="Expected a Map:\n";
-			uint16_t i=0;
-			while (bf[i]){
-				i++;
-			}
-			i+=_copy_str(bf+i,f_nm);
-			bf[i+_copy_str(bf+i,":<root>")]=0;
-			write_error_body(err,bf);
+			_schema_error(e,"Expected a Map:\n%s:<root>",f_nm);
 			_free_json(&json);
 			return;
 		}
 		json_object_t* nm=_get_by_key(&json,"name");
 		if (!nm){
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="Expected a \"name\" Property:\n";
-			uint16_t i=0;
-			while (bf[i]){
-				i++;
-			}
-			i+=_copy_str(bf+i,f_nm);
-			bf[i+_copy_str(bf+i,":<root>")]=0;
-			write_error_body(err,bf);
+			_schema_error(e,"Expected a \"name\" Property:\n%s:<root>",f_nm);
 			_free_json(&json);
 			return;
 		}
 		if (nm->t!=JSON_OBJECT_TYPE_STRING){
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="The \"name\" Property Must be a String:\n";
-			uint16_t i=0;
-			while (bf[i]){
-				i++;
-			}
-			i+=_copy_str(bf+i,f_nm);
-			bf[i+_copy_str(bf+i,":<root>.name")]=0;
-			write_error_body(err,bf);
+			_schema_error(e,"The \"name\" Property Must be a String:\n%s:<root>.name",f_nm);
 			_free_json(&json);
 			return;
 		}
 		if (nm->dt.s.l>EDITOR_SYNTAX_NAME_LENGTH){
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="The \"name\" Property Must be No More Than ";
-			uint32_t i=0;
-			while (bf[i]){
-				i++;
-			}
-			WRITE_INT(EDITOR_SYNTAX_NAME_LENGTH,bf,i);
-			i+=_copy_str(bf+i," Characters:\n");
-			i+=_copy_str(bf+i,f_nm);
-			bf[i+_copy_str(bf+i,":<root>.name")]=0;
-			write_error_body(err,bf);
+			_schema_error(e,"The \"name\" Property Must be No More Than %i Character:\n%s:<root>.name",EDITOR_SYNTAX_NAME_LENGTH,f_nm);
 			_free_json(&json);
 			return;
 		}
@@ -159,17 +171,7 @@ void load_syntax(editor_t* e,editor_syntax_t* o,const char* dt,uint32_t dtl,cons
 		o->nm[o->nml]=0;
 		json_object_t* el=_get_by_key(&json,"extensions");
 		if (!el){
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="Expected an \"extensions\" Property:\n";
-			uint16_t i=0;
-			while (bf[i]){
-				i++;
-			}
-			i+=_copy_str(bf+i,f_nm);
-			bf[i+_copy_str(bf+i,":<root>")]=0;
-			write_error_body(err,bf);
+			_schema_error(e,"Expected an \"extensions\" Property:\n%s:<root>",f_nm);
 			_free_json(&json);
 			return;
 		}
@@ -179,17 +181,7 @@ void load_syntax(editor_t* e,editor_syntax_t* o,const char* dt,uint32_t dtl,cons
 		}
 		else{
 			if (el->t!=JSON_OBJECT_TYPE_ARRAY){
-				editor_error_t* err=create_error(e);
-				err->tl=_copy_str(err->t,"JSON Schema Error");
-				err->t[err->tl]=0;
-				char bf[4096]="The \"extensions\" Property Must be an Array:\n";
-				uint16_t i=0;
-				while (bf[i]){
-					i++;
-				}
-				i+=_copy_str(bf+i,f_nm);
-				bf[i+_copy_str(bf+i,":<root>.extensions")]=0;
-				write_error_body(err,bf);
+				_schema_error(e,"The \"extensions\" Property Must be an Array:\n%s:<root>.extensions",f_nm);
 				_free_json(&json);
 				return;
 			}
@@ -198,40 +190,12 @@ void load_syntax(editor_t* e,editor_syntax_t* o,const char* dt,uint32_t dtl,cons
 			for (uint32_t i=0;i<el->dt.a.l;i++){
 				json_object_t* ex=el->dt.a.dt+i;
 				if (ex->t!=JSON_OBJECT_TYPE_STRING){
-					editor_error_t* err=create_error(e);
-					err->tl=_copy_str(err->t,"JSON Schema Error");
-					err->t[err->tl]=0;
-					char bf[4096]="An Extension Must be a String:\n";
-					uint32_t j=0;
-					while (bf[j]){
-						j++;
-					}
-					j+=_copy_str(bf+j,f_nm);
-					j+=_copy_str(bf+j,":<root>.extensions[");
-					WRITE_INT(i,bf,j);
-					bf[j]=']';
-					bf[j+1]=0;
-					write_error_body(err,bf);
+					_schema_error(e,"Extension Must be a String:\n%s:<root>.extensions[%i]",f_nm,i);
 					_free_json(&json);
 					return;
 				}
 				if (ex->dt.s.l>UINT8_MAX){
-					editor_error_t* err=create_error(e);
-					err->tl=_copy_str(err->t,"JSON Schema Error");
-					err->t[err->tl]=0;
-					char bf[4096]="An Extension Must be No More Than ";
-					uint32_t j=0;
-					while (bf[j]){
-						j++;
-					}
-					WRITE_INT(UINT8_MAX,bf,j);
-					j+=_copy_str(bf+j," Characters:\n");
-					j+=_copy_str(bf+j,f_nm);
-					j+=_copy_str(bf+j,":<root>.extensions[");
-					WRITE_INT(i,bf,j);
-					bf[j]=']';
-					bf[j+1]=0;
-					write_error_body(err,bf);
+					_schema_error(e,"An Extension Must be No More Than %i Characters:\n%s:<root>.extensions[%i]",UINT8_MAX,f_nm,i);
 					_free_json(&json);
 					return;
 				}
@@ -242,103 +206,33 @@ void load_syntax(editor_t* e,editor_syntax_t* o,const char* dt,uint32_t dtl,cons
 		}
 		json_object_t* b_sc=_get_by_key(&json,"base_scope");
 		if (!b_sc){
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="Expected The \"base_scope\" Property:\n";
-			uint32_t i=0;
-			while (bf[i]){
-				i++;
-			}
-			i+=_copy_str(bf+i,f_nm);
-			bf[i+_copy_str(bf+i,":<root>.name")]=0;
-			write_error_body(err,bf);
+			_schema_error(e,"Expected a \"base_scope\" Property:\n%s:<root>",f_nm);
 			_free_json(&json);
 			return;
 		}
 		if (b_sc->t!=JSON_OBJECT_TYPE_ARRAY){
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="The \"base_scope\" Property Must be an Array:\n";
-			uint32_t i=0;
-			while (bf[i]){
-				i++;
-			}
-			i+=_copy_str(bf+i,f_nm);
-			bf[i+_copy_str(bf+i,":<root>.base_scope")]=0;
-			write_error_body(err,bf);
+			_schema_error(e,"The \"base_scope\" Property Must be an Array:\n%s:<root>.base_scope",f_nm);
 			_free_json(&json);
 			return;
 		}
 		if (b_sc->dt.a.l>EDITOR_SYNTAX_MAX_SCOPE_COUNT){
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="The \"base_scope\" Property Must Have no More Than ";
-			uint32_t i=0;
-			while (bf[i]){
-				i++;
-			}
-			WRITE_INT(EDITOR_SYNTAX_MAX_SCOPE_COUNT,bf,i);
-			i+=_copy_str(bf+i," Items:\n");
-			i+=_copy_str(bf+i,f_nm);
-			bf[i+_copy_str(bf+i,":<root>.base_scope")]=0;
-			write_error_body(err,bf);
+			_schema_error(e,"The \"base_scope\" Property Must Have no More Than %i Items:\n%s:<root>.base_scope",EDITOR_SYNTAX_MAX_SCOPE_COUNT,f_nm);
 			_free_json(&json);
 			return;
 		}
 		for (uint8_t i=0;i<b_sc->dt.a.l;i++){
 			json_object_t* sc=b_sc->dt.a.dt+i;
 			if (sc->t!=JSON_OBJECT_TYPE_STRING){
-				editor_error_t* err=create_error(e);
-				err->tl=_copy_str(err->t,"JSON Schema Error");
-				err->t[err->tl]=0;
-				char bf[4096]="A Scope Must be a String:\n";
-				uint32_t j=0;
-				while (bf[j]){
-					j++;
-				}
-				j+=_copy_str(bf+j,f_nm);
-				j+=_copy_str(bf+j,":<root>.base_scope[");
-				WRITE_INT(i,bf,j);
-				bf[j]=']';
-				bf[j+1]=0;
-				write_error_body(err,bf);
+				_schema_error(e,"A Scope Must be a String:\n%s:<root>.base_scope[%i]",f_nm,i);
 				_free_json(&json);
 				return;
 			}
-			for (uint8_t j=1;j<sizeof(SYNTAX_SCOPE_NAME_LIST)/sizeof(SYNTAX_SCOPE_NAME_LIST[0]);j++){
-				uint8_t k=-1;
-				do{
-					k++;
-					if (*(SYNTAX_SCOPE_NAME_LIST[j]+k)!=*(sc->dt.s.v+k)){
-						goto _check_next_name;
-					}
-				} while (*(SYNTAX_SCOPE_NAME_LIST[j]+k));
-				o->b_sc.dt[i]=j;
-				goto _check_next_scope;
-_check_next_name:;
+			o->b_sc.dt[i]=_find_scope(sc->dt.s.v);
+			if (o->b_sc.dt[i]==EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX){
+				_schema_error(e,"Unknown Scope Name '%s':\n%s:<root>.base_scope[%i]",sc->dt.s.v,f_nm,i);
+				_free_json(&json);
+				return;
 			}
-			editor_error_t* err=create_error(e);
-			err->tl=_copy_str(err->t,"JSON Schema Error");
-			err->t[err->tl]=0;
-			char bf[4096]="Unknown Scope Name '";
-			uint32_t j=0;
-			while (bf[j]){
-				j++;
-			}
-			j+=_copy_str(bf+j,sc->dt.s.v);
-			j+=_copy_str(bf+j,"':\n");
-			j+=_copy_str(bf+j,f_nm);
-			j+=_copy_str(bf+j,":<root>.base_scope[");
-			WRITE_INT(i,bf,j);
-			bf[j]=']';
-			bf[j+1]=0;
-			write_error_body(err,bf);
-			_free_json(&json);
-			return;
-_check_next_scope:;
 		}
 		if (b_sc->dt.a.l<EDITOR_SYNTAX_MAX_SCOPE_COUNT){
 			o->b_sc.dt[b_sc->dt.a.l]=EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX;
@@ -346,34 +240,12 @@ _check_next_scope:;
 		json_object_t* dt=_get_by_key(&json,"data");
 		if (dt){
 			if (dt->t!=JSON_OBJECT_TYPE_ARRAY){
-				editor_error_t* err=create_error(e);
-				err->tl=_copy_str(err->t,"JSON Schema Error");
-				err->t[err->tl]=0;
-				char bf[4096]="The \"data\" Property Must be an Array:\n";
-				uint16_t i=0;
-				while (bf[i]){
-					i++;
-				}
-				i+=_copy_str(bf+i,f_nm);
-				bf[i+_copy_str(bf+i,":<root>.data")]=0;
-				write_error_body(err,bf);
+				_schema_error(e,"The \"data\" Property Must be an Array:\n%s:<root>.data",f_nm);
 				_free_json(&json);
 				return;
 			}
 			if (dt->dt.a.l>UINT16_MAX){
-				editor_error_t* err=create_error(e);
-				err->tl=_copy_str(err->t,"JSON Schema Error");
-				err->t[err->tl]=0;
-				char bf[4096]="The \"data\" Property Must Have no More Than ";
-				uint16_t i=0;
-				while (bf[i]){
-					i++;
-				}
-				WRITE_INT(UINT16_MAX,bf,i);
-				i+=_copy_str(bf+i," Elements:\n");
-				i+=_copy_str(bf+i,f_nm);
-				bf[i+_copy_str(bf+i,":<root>.data")]=0;
-				write_error_body(err,bf);
+				_schema_error(e,"The \"data\" Property Must Have no More Than %i Items:\n%s:<root>.data",UINT16_MAX,f_nm);
 				_free_json(&json);
 				return;
 			}
@@ -383,189 +255,117 @@ _check_next_scope:;
 				json_object_t* ctx=dt->dt.a.dt+i;
 				editor_syntax_context_t* c=o->c+i;
 				if (ctx->t!=JSON_OBJECT_TYPE_ARRAY){
-					editor_error_t* err=create_error(e);
-					err->tl=_copy_str(err->t,"JSON Schema Error");
-					err->t[err->tl]=0;
-					char bf[4096]="A Context Must be an Array:\n";
-					uint16_t j=0;
-					while (bf[j]){
-						j++;
-					}
-					j+=_copy_str(bf+j,f_nm);
-					j+=_copy_str(bf+j,":<root>.data[");
-					WRITE_INT(i,bf,j);
-					bf[j]=']';
-					bf[j+1]=0;
-					write_error_body(err,bf);
+					_schema_error(e,"A Context Must be an Array:\n%s:<root>.data[%i]",f_nm,i);
 					_free_json(&json);
 					return;
 				}
 				if (ctx->dt.a.l>UINT16_MAX){
-					editor_error_t* err=create_error(e);
-					err->tl=_copy_str(err->t,"JSON Schema Error");
-					err->t[err->tl]=0;
-					char bf[4096]="A Context Must Have no More Than ";
-					uint16_t j=0;
-					while (bf[j]){
-						j++;
-					}
-					WRITE_INT(UINT16_MAX,bf,j);
-					j+=_copy_str(bf+j," Elements:\n");
-					j+=_copy_str(bf+j,f_nm);
-					j+=_copy_str(bf+j,":<root>.data[");
-					WRITE_INT(i,bf,j);
-					bf[j]=']';
-					bf[j+1]=0;
-					write_error_body(err,bf);
+					_schema_error(e,"A Context Must Have no More Than %i Items:\n%s:<root>.data[%i]",UINT16_MAX,f_nm,i);
 					_free_json(&json);
 					return;
 				}
 				c->l=ctx->dt.a.l;
+				c->rw=0;
 				c->sc.dt[0]=EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX;
 				c->e=malloc(c->l*sizeof(editor_syntax_context_element_t));
 				for (uint16_t j=0;j<c->l;j++){
 					json_object_t* ctx_e=ctx->dt.a.dt+j;
 					if (ctx_e->t!=JSON_OBJECT_TYPE_MAP){
-						editor_error_t* err=create_error(e);
-						err->tl=_copy_str(err->t,"JSON Schema Error");
-						err->t[err->tl]=0;
-						char bf[4096]="A Context Must be a Map:\n";
-						uint16_t k=0;
-						while (bf[k]){
-							k++;
-						}
-						k+=_copy_str(bf+k,f_nm);
-						k+=_copy_str(bf+k,":<root>.data[");
-						WRITE_INT(i,bf,k);
-						bf[k]=']';
-						bf[k+1]='[';
-						k+=2;
-						WRITE_INT(j,bf,k);
-						bf[k]=']';
-						bf[k+1]=0;
-						write_error_body(err,bf);
+						_schema_error(e,"A Context Must be a Map:\n%s:<root>.data[%i][%i]",f_nm,i,j);
 						_free_json(&json);
 						return;
 					}
 					json_object_t* ctx_e_t=_get_by_key(ctx_e,"type");
 					if (!ctx_e_t){
-						editor_error_t* err=create_error(e);
-						err->tl=_copy_str(err->t,"JSON Schema Error");
-						err->t[err->tl]=0;
-						char bf[4096]="Expected a \"type\" Property:\n";
-						uint16_t k=0;
-						while (bf[k]){
-							k++;
-						}
-						k+=_copy_str(bf+k,f_nm);
-						k+=_copy_str(bf+k,":<root>.data[");
-						WRITE_INT(i,bf,k);
-						bf[k]=']';
-						bf[k+1]='[';
-						k+=2;
-						WRITE_INT(j,bf,k);
-						bf[k]=']';
-						bf[k+1]=0;
-						write_error_body(err,bf);
+						_schema_error(e,"Expected a \"type\" Property:\n%s:<root>.data[%i][%i]",f_nm,i,j);
 						_free_json(&json);
 						return;
 					}
 					if (ctx_e_t->t!=JSON_OBJECT_TYPE_STRING){
-						editor_error_t* err=create_error(e);
-						err->tl=_copy_str(err->t,"JSON Schema Error");
-						err->t[err->tl]=0;
-						char bf[4096]="The \"type\" Property Must be a String:\n";
-						uint16_t k=0;
-						while (bf[k]){
-							k++;
-						}
-						k+=_copy_str(bf+k,f_nm);
-						k+=_copy_str(bf+k,":<root>.data[");
-						WRITE_INT(i,bf,k);
-						bf[k]=']';
-						bf[k+1]='[';
-						k+=2;
-						WRITE_INT(j,bf,k);
-						bf[k+_copy_str(bf+k,"].type")]=0;
-						write_error_body(err,bf);
+						_schema_error(e,"The \"type\" Property Must be a String:\n%s:<root>.data[%i][%i]",f_nm,i,j);
 						_free_json(&json);
 						return;
 					}
 					if (ctx_e_t->dt.s.l==4&&_cmp_str_len(ctx_e_t->dt.s.v,"link",4)){
-						//
+						json_object_t* ctx_e_id=_get_by_key(ctx_e,"index");
+						if (!ctx_e_id){
+							_schema_error(e,"Expected a \"index\" Property:\n%s:<root>.data[%i][%i]",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						if (ctx_e_id->t!=JSON_OBJECT_TYPE_INTEGER||ctx_e_id->dt.i<0){
+							_schema_error(e,"The \"index\" Property Must be a Positive Integer:\n%s:<root>.data[%i][%i].index",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						if (ctx_e_id->dt.i>=o->cl){
+							_schema_error(e,"The \"index\" Property Must be Lower Than %i:\n%s:<root>.data[%i][%i].index",o->cl,f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						(c->e+j)->fl=EDITOR_SYNTAX_CONTEXT_TYPE_LINK;
+						(c->e+j)->dt.l=(uint16_t)(ctx_e_id->dt.i);
 					}
 					else if (ctx_e_t->dt.s.l==5&&_cmp_str_len(ctx_e_t->dt.s.v,"regex",5)){
-						//
+						// Regex
 					}
 					else if (ctx_e_t->dt.s.l==5&&_cmp_str_len(ctx_e_t->dt.s.v,"scope",5)){
 						c->l--;
 						if (c->sc.dt[0]!=EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX){
-							editor_error_t* err=create_error(e);
-							err->tl=_copy_str(err->t,"JSON Schema Error");
-							err->t[err->tl]=0;
-							char bf[4096]="Multiple 'scope' Sections not Allowed:\n";
-							uint16_t k=0;
-							while (bf[k]){
-								k++;
-							}
-							k+=_copy_str(bf+k,f_nm);
-							k+=_copy_str(bf+k,":<root>.data[");
-							WRITE_INT(i,bf,k);
-							bf[k]=']';
-							bf[k+1]='[';
-							k+=2;
-							WRITE_INT(j,bf,k);
-							bf[k+_copy_str(bf+k,"]")]=0;
-							write_error_body(err,bf);
+							_schema_error(e,"Multiple \"scope\" Sections not Allowed:\n%s:<root>.data[%i][%i]",f_nm,i,j);
 							_free_json(&json);
 							return;
 						}
 						json_object_t* ctx_e_sc=_get_by_key(ctx_e,"scope");
 						if (!ctx_e_sc){
-							editor_error_t* err=create_error(e);
-							err->tl=_copy_str(err->t,"JSON Schema Error");
-							err->t[err->tl]=0;
-							char bf[4096]="Expected a 'scope' Property:\n";
-							uint16_t k=0;
-							while (bf[k]){
-								k++;
-							}
-							k+=_copy_str(bf+k,f_nm);
-							k+=_copy_str(bf+k,":<root>.data[");
-							WRITE_INT(i,bf,k);
-							bf[k]=']';
-							bf[k+1]='[';
-							k+=2;
-							WRITE_INT(j,bf,k);
-							bf[k+_copy_str(bf+k,"]")]=0;
-							write_error_body(err,bf);
+							_schema_error(e,"Expected a \"scope\" Property:\n%s:<root>.data[%i][%i]",f_nm,i,j);
 							_free_json(&json);
 							return;
 						}
+						if (ctx_e_sc->dt.a.l>EDITOR_SYNTAX_MAX_SCOPE_COUNT){
+							_schema_error(e,"A Scope Array Must Have no More Than %i Items:\n%s:<root>.data[%i][%i].scope",EDITOR_SYNTAX_MAX_SCOPE_COUNT,f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						for (uint8_t k=0;k<ctx_e_sc->dt.a.l;k++){
+							json_object_t* sc=ctx_e_sc->dt.a.dt+k;
+							if (sc->t!=JSON_OBJECT_TYPE_STRING){
+								_schema_error(e,"A Scope Must be a String:\n%s:<root>.data[%i][%i].scope[%i]",f_nm,i,j,k);
+								_free_json(&json);
+								return;
+							}
+							c->sc.dt[k]=_find_scope(sc->dt.s.v);
+							if (c->sc.dt[k]==EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX){
+								_schema_error(e,"Unknown Scope Name '%s':\n%s:<root>.data[%i][%i].scope[%i]",sc->dt.s.v,f_nm,i,j,k);
+								_free_json(&json);
+								return;
+							}
+						}
+						if (ctx_e_sc->dt.a.l<EDITOR_SYNTAX_MAX_SCOPE_COUNT){
+							c->sc.dt[ctx_e_sc->dt.a.l]=EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX;
+						}
 					}
 					else if (ctx_e_t->dt.s.l==6&&_cmp_str_len(ctx_e_t->dt.s.v,"rewind",6)){
-						//
+						if (c->rw){
+							_schema_error(e,"Multiple \"rewind\" Sections not Allowed:\n%s:<root>.data[%i][%i]",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						json_object_t* ctx_e_cnt=_get_by_key(ctx_e,"count");
+						if (!ctx_e_cnt){
+							_schema_error(e,"Expected a \"count\" Property:\n%s:<root>.data[%i][%i]",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						if (ctx_e_cnt->t!=JSON_OBJECT_TYPE_INTEGER||ctx_e_cnt->dt.i<0){
+							_schema_error(e,"The \"count\" Property Must be a Positive Integer:\n%s:<root>.data[%i][%i].count",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						c->rw=(ctx_e_cnt->dt.i?(uint16_t)(ctx_e_cnt->dt.i):EDITOR_SYNTAX_REWIND_ALL);
 					}
 					else{
-						editor_error_t* err=create_error(e);
-						err->tl=_copy_str(err->t,"JSON Schema Error");
-						err->t[err->tl]=0;
-						char bf[4096]="Unknown Type '";
-						uint16_t k=0;
-						while (bf[k]){
-							k++;
-						}
-						k+=_copy_str(bf+k,ctx_e_t->dt.s.v);
-						k+=_copy_str(bf+k,"':\n");
-						k+=_copy_str(bf+k,f_nm);
-						k+=_copy_str(bf+k,":<root>.data[");
-						WRITE_INT(i,bf,k);
-						bf[k]=']';
-						bf[k+1]='[';
-						k+=2;
-						WRITE_INT(j,bf,k);
-						bf[k+_copy_str(bf+k,"].type")]=0;
-						write_error_body(err,bf);
+						_schema_error(e,"Unknown Type '%s':\n%s:<root>.data[%i][%i].type",ctx_e_t->dt.s.v,f_nm,i,j);
 						_free_json(&json);
 						return;
 					}

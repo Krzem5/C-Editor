@@ -10,48 +10,48 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "link",
-				"index": "value"
+				"index": 1
 			}
 		],
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "link",
-				"index": "constant"
+				"index": 4
 			},
 			{
 				"type": "link",
-				"index": "number"
+				"index": 5
 			},
 			{
 				"type": "link",
-				"index": "string"
+				"index": 7
 			},
 			{
 				"type": "link",
-				"index": "array"
+				"index": 2
 			},
 			{
 				"type": "link",
-				"index": "object"
+				"index": 6
 			}
 		],
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "regex",
 				"regex": "\\[",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": 10,
 				"pop": false
@@ -60,12 +60,12 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "regex",
 				"regex": "/\\*\\*(?!/)",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": 11,
 				"pop": false
@@ -73,7 +73,7 @@
 			{
 				"type": "regex",
 				"regex": "/\\*",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": 12,
 				"pop": false
@@ -94,12 +94,12 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "regex",
 				"regex": "\\b(?:true|false|null)\\b",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"constant"
 				],
@@ -110,7 +110,7 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "regex",
@@ -149,12 +149,12 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "regex",
 				"regex": "\\{",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": 13,
 				"pop": false
@@ -163,12 +163,12 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "regex",
 				"regex": "\"",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": 8,
 				"pop": false
@@ -184,19 +184,19 @@
 			{
 				"type": "regex",
 				"regex": "\"",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": -1,
 				"pop": true
 			},
 			{
 				"type": "link",
-				"index": "string-escape"
+				"index": 9
 			},
 			{
 				"type": "regex",
 				"regex": "$\\n?",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"invalid"
 				],
@@ -207,12 +207,12 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "regex",
 				"regex": "(?x:                # turn on extended mode\n  \\\\                # a literal backslash\n  (?:               # ...followed by...\n    [\"\\\\/bfnrt]     # one of these characters\n    |               # ...or...\n    u               # a u\n    [0-9a-fA-F]{4}  # and four hex digits\n  )\n)",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"escape"
 				],
@@ -222,7 +222,7 @@
 			{
 				"type": "regex",
 				"regex": "\\\\.",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"invalid"
 				],
@@ -233,7 +233,7 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "scope",
@@ -242,19 +242,19 @@
 			{
 				"type": "regex",
 				"regex": "\\]",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": -1,
 				"pop": true
 			},
 			{
 				"type": "link",
-				"index": "value"
+				"index": 1
 			},
 			{
 				"type": "regex",
 				"regex": ",",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"separator"
 				],
@@ -264,7 +264,7 @@
 			{
 				"type": "regex",
 				"regex": "[^\\s\\]]",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"invalid"
 				],
@@ -282,7 +282,7 @@
 			{
 				"type": "regex",
 				"regex": "\\*/",
-				"groups": [],
+				"groups": {},
 				"scope": null,
 				"push": -1,
 				"pop": true
@@ -308,7 +308,7 @@
 			{
 				"type": "regex",
 				"regex": "\\*/",
-				"groups": [],
+				"groups": {},
 				"scope": null,
 				"push": -1,
 				"pop": true
@@ -317,7 +317,7 @@
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "scope",
@@ -326,7 +326,7 @@
 			{
 				"type": "regex",
 				"regex": "\\}",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": -1,
 				"pop": true
@@ -334,7 +334,7 @@
 			{
 				"type": "regex",
 				"regex": "\"",
-				"groups": [],
+				"groups": {},
 				"scope": [],
 				"push": 14,
 				"pop": false
@@ -342,7 +342,7 @@
 			{
 				"type": "regex",
 				"regex": ":",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"separator"
 				],
@@ -352,7 +352,7 @@
 			{
 				"type": "regex",
 				"regex": "[^\\s\\}]",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"invalid"
 				],
@@ -363,7 +363,7 @@
 		[
 			{
 				"type": "rewind",
-				"value": 0
+				"count": 0
 			},
 			{
 				"type": "scope",
@@ -373,18 +373,18 @@
 			},
 			{
 				"type": "link",
-				"index": "inside-string"
+				"index": 8
 			}
 		],
 		[
 			{
 				"type": "link",
-				"index": "comments"
+				"index": 3
 			},
 			{
 				"type": "regex",
 				"regex": ",|\\s?(?=\\})",
-				"groups": [],
+				"groups": {},
 				"scope": [
 					"invalid"
 				],
@@ -394,7 +394,7 @@
 			{
 				"type": "regex",
 				"regex": "(?=\\S)",
-				"groups": [],
+				"groups": {},
 				"scope": null,
 				"push": -1,
 				"pop": false
