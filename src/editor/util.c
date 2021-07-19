@@ -12,3 +12,14 @@ uint32_t _copy_str(char* d,const char* s){
 	}
 	return o;
 }
+
+
+
+uint8_t _cmp_str_len(const char* a,const char* b,uint32_t l){
+	for (uint32_t i=0;i<l;i++){
+		if (*(a+i)!=*(b+i)){
+			return 0;
+		}
+	}
+	return 1;
+}

@@ -74,12 +74,34 @@ typedef struct __EDITOR_SYNTAX_SCOPE{
 
 
 
-typedef struct __EDITOR_SYNTAX_CONTEXT{
-	uint8_t fl;
+typedef struct __EDITOR_SYNTAX_CONTEXT_ELEMENT_DATA_REGEX{
 	char* rgx;
 	editor_syntax_scope_t sc;
 	editor_syntax_scope_t* c;
 	uint16_t p;
+} editor_syntax_context_element_data_regex_t;
+
+
+
+typedef union __EDITOR_SYNTAX_CONTEXT_ELEMENT_DATA{
+	uint16_t l;
+	editor_syntax_context_element_data_regex_t m;
+	uint16_t r;
+} editor_syntax_context_element_data_t;
+
+
+
+typedef struct __EDITOR_SYNTAX_CONTEXT_ELEMENT{
+	uint8_t fl;
+	editor_syntax_context_element_data_t dt;
+} editor_syntax_context_element_t;
+
+
+
+typedef struct __EDITOR_SYNTAX_CONTEXT{
+	uint16_t l;
+	editor_syntax_scope_t sc;
+	editor_syntax_context_element_t* e;
 } editor_syntax_context_t;
 
 

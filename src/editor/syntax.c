@@ -382,7 +382,7 @@ _check_next_scope:;
 			for (uint16_t i=0;i<o->cl;i++){
 				json_object_t* ctx=dt->dt.a.dt+i;
 				editor_syntax_context_t* c=o->c+i;
-				if (ctx->t==JSON_OBJECT_TYPE_ARRAY){
+				if (ctx->t!=JSON_OBJECT_TYPE_ARRAY){
 					editor_error_t* err=create_error(e);
 					err->tl=_copy_str(err->t,"JSON Schema Error");
 					err->t[err->tl]=0;
@@ -399,6 +399,179 @@ _check_next_scope:;
 					write_error_body(err,bf);
 					_free_json(&json);
 					return;
+				}
+				if (ctx->dt.a.l>UINT16_MAX){
+					editor_error_t* err=create_error(e);
+					err->tl=_copy_str(err->t,"JSON Schema Error");
+					err->t[err->tl]=0;
+					char bf[4096]="A Context Must Have no More Than ";
+					uint16_t j=0;
+					while (bf[j]){
+						j++;
+					}
+					WRITE_INT(UINT16_MAX,bf,j);
+					j+=_copy_str(bf+j," Elements:\n");
+					j+=_copy_str(bf+j,f_nm);
+					j+=_copy_str(bf+j,":<root>.data[");
+					WRITE_INT(i,bf,j);
+					bf[j]=']';
+					bf[j+1]=0;
+					write_error_body(err,bf);
+					_free_json(&json);
+					return;
+				}
+				c->l=ctx->dt.a.l;
+				c->sc.dt[0]=EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX;
+				c->e=malloc(c->l*sizeof(editor_syntax_context_element_t));
+				for (uint16_t j=0;j<c->l;j++){
+					json_object_t* ctx_e=ctx->dt.a.dt+j;
+					if (ctx_e->t!=JSON_OBJECT_TYPE_MAP){
+						editor_error_t* err=create_error(e);
+						err->tl=_copy_str(err->t,"JSON Schema Error");
+						err->t[err->tl]=0;
+						char bf[4096]="A Context Must be a Map:\n";
+						uint16_t k=0;
+						while (bf[k]){
+							k++;
+						}
+						k+=_copy_str(bf+k,f_nm);
+						k+=_copy_str(bf+k,":<root>.data[");
+						WRITE_INT(i,bf,k);
+						bf[k]=']';
+						bf[k+1]='[';
+						k+=2;
+						WRITE_INT(j,bf,k);
+						bf[k]=']';
+						bf[k+1]=0;
+						write_error_body(err,bf);
+						_free_json(&json);
+						return;
+					}
+					json_object_t* ctx_e_t=_get_by_key(ctx_e,"type");
+					if (!ctx_e_t){
+						editor_error_t* err=create_error(e);
+						err->tl=_copy_str(err->t,"JSON Schema Error");
+						err->t[err->tl]=0;
+						char bf[4096]="Expected a \"type\" Property:\n";
+						uint16_t k=0;
+						while (bf[k]){
+							k++;
+						}
+						k+=_copy_str(bf+k,f_nm);
+						k+=_copy_str(bf+k,":<root>.data[");
+						WRITE_INT(i,bf,k);
+						bf[k]=']';
+						bf[k+1]='[';
+						k+=2;
+						WRITE_INT(j,bf,k);
+						bf[k]=']';
+						bf[k+1]=0;
+						write_error_body(err,bf);
+						_free_json(&json);
+						return;
+					}
+					if (ctx_e_t->t!=JSON_OBJECT_TYPE_STRING){
+						editor_error_t* err=create_error(e);
+						err->tl=_copy_str(err->t,"JSON Schema Error");
+						err->t[err->tl]=0;
+						char bf[4096]="The \"type\" Property Must be a String:\n";
+						uint16_t k=0;
+						while (bf[k]){
+							k++;
+						}
+						k+=_copy_str(bf+k,f_nm);
+						k+=_copy_str(bf+k,":<root>.data[");
+						WRITE_INT(i,bf,k);
+						bf[k]=']';
+						bf[k+1]='[';
+						k+=2;
+						WRITE_INT(j,bf,k);
+						bf[k+_copy_str(bf+k,"].type")]=0;
+						write_error_body(err,bf);
+						_free_json(&json);
+						return;
+					}
+					if (ctx_e_t->dt.s.l==4&&_cmp_str_len(ctx_e_t->dt.s.v,"link",4)){
+						//
+					}
+					else if (ctx_e_t->dt.s.l==5&&_cmp_str_len(ctx_e_t->dt.s.v,"regex",5)){
+						//
+					}
+					else if (ctx_e_t->dt.s.l==5&&_cmp_str_len(ctx_e_t->dt.s.v,"scope",5)){
+						c->l--;
+						if (c->sc.dt[0]!=EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX){
+							editor_error_t* err=create_error(e);
+							err->tl=_copy_str(err->t,"JSON Schema Error");
+							err->t[err->tl]=0;
+							char bf[4096]="Multiple 'scope' Sections not Allowed:\n";
+							uint16_t k=0;
+							while (bf[k]){
+								k++;
+							}
+							k+=_copy_str(bf+k,f_nm);
+							k+=_copy_str(bf+k,":<root>.data[");
+							WRITE_INT(i,bf,k);
+							bf[k]=']';
+							bf[k+1]='[';
+							k+=2;
+							WRITE_INT(j,bf,k);
+							bf[k+_copy_str(bf+k,"]")]=0;
+							write_error_body(err,bf);
+							_free_json(&json);
+							return;
+						}
+						json_object_t* ctx_e_sc=_get_by_key(ctx_e,"scope");
+						if (!ctx_e_sc){
+							editor_error_t* err=create_error(e);
+							err->tl=_copy_str(err->t,"JSON Schema Error");
+							err->t[err->tl]=0;
+							char bf[4096]="Expected a 'scope' Property:\n";
+							uint16_t k=0;
+							while (bf[k]){
+								k++;
+							}
+							k+=_copy_str(bf+k,f_nm);
+							k+=_copy_str(bf+k,":<root>.data[");
+							WRITE_INT(i,bf,k);
+							bf[k]=']';
+							bf[k+1]='[';
+							k+=2;
+							WRITE_INT(j,bf,k);
+							bf[k+_copy_str(bf+k,"]")]=0;
+							write_error_body(err,bf);
+							_free_json(&json);
+							return;
+						}
+					}
+					else if (ctx_e_t->dt.s.l==6&&_cmp_str_len(ctx_e_t->dt.s.v,"rewind",6)){
+						//
+					}
+					else{
+						editor_error_t* err=create_error(e);
+						err->tl=_copy_str(err->t,"JSON Schema Error");
+						err->t[err->tl]=0;
+						char bf[4096]="Unknown Type '";
+						uint16_t k=0;
+						while (bf[k]){
+							k++;
+						}
+						k+=_copy_str(bf+k,ctx_e_t->dt.s.v);
+						k+=_copy_str(bf+k,"':\n");
+						k+=_copy_str(bf+k,f_nm);
+						k+=_copy_str(bf+k,":<root>.data[");
+						WRITE_INT(i,bf,k);
+						bf[k]=']';
+						bf[k+1]='[';
+						k+=2;
+						WRITE_INT(j,bf,k);
+						bf[k+_copy_str(bf+k,"].type")]=0;
+						write_error_body(err,bf);
+						_free_json(&json);
+						return;
+					}
+				}
+				if (ctx->dt.a.l!=c->l){
+					c->e=realloc(c->e,c->l*sizeof(editor_syntax_context_element_t));
 				}
 			}
 		}

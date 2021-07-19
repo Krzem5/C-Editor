@@ -106,4 +106,8 @@ uint32_t _copy_str(char* d,const char* s);
 
 
 
+uint8_t _cmp_str_len(const char* a,const char* b,uint32_t l);
+
+
+
 #endif
