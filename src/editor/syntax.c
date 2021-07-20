@@ -307,7 +307,78 @@ void load_syntax(editor_t* e,editor_syntax_t* o,const char* dt,uint32_t dtl,cons
 						(c->e+j)->dt.l=(uint16_t)(ctx_e_id->dt.i);
 					}
 					else if (ctx_e_t->dt.s.l==5&&_cmp_str_len(ctx_e_t->dt.s.v,"regex",5)){
-						// Regex
+						json_object_t* ctx_e_rx=_get_by_key(ctx_e,"regex");
+						if (!ctx_e_rx){
+							_schema_error(e,"Expected a \"regex\" Property:\n%s:<root>.data[%i][%i]",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						if (ctx_e_rx->t!=JSON_OBJECT_TYPE_STRING){
+							_schema_error(e,"The \"regex\" Property Must be a String:\n%s:<root>.data[%i][%i].regex",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						(c->e+j)->fl=EDITOR_SYNTAX_CONTEXT_TYPE_REGEX;
+						editor_syntax_context_element_data_regex_t* r_dt=malloc(sizeof(editor_syntax_context_element_data_regex_t));
+						(c->e+j)->dt.m=r_dt;
+						json_object_t* ctx_e_sc=_get_by_key(ctx_e,"scope");
+						if (!ctx_e_sc){
+							_schema_error(e,"Expected a \"scope\" Property:\n%s:<root>.data[%i][%i]",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						if (ctx_e_sc->t!=JSON_OBJECT_TYPE_ARRAY){
+							_schema_error(e,"A \"scope\" Property Must be an Array:\n%s:<root>.data[%i][%i].scope",f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						if (ctx_e_sc->dt.a.l>EDITOR_SYNTAX_MAX_SCOPE_COUNT){
+							_schema_error(e,"A \"scope\" Property Must Have no More Than %i Items:\n%s:<root>.data[%i][%i].scope",EDITOR_SYNTAX_MAX_SCOPE_COUNT,f_nm,i,j);
+							_free_json(&json);
+							return;
+						}
+						for (uint8_t k=0;k<ctx_e_sc->dt.a.l;k++){
+							json_object_t* sc=ctx_e_sc->dt.a.dt+k;
+							if (sc->t!=JSON_OBJECT_TYPE_STRING){
+								_schema_error(e,"A Scope Must be a String:\n%s:<root>.data[%i][%i].scope[%i]",f_nm,i,j,k);
+								_free_json(&json);
+								return;
+							}
+							r_dt->sc.dt[k]=_find_scope(sc->dt.s.v);
+							if (r_dt->sc.dt[k]==EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX){
+								_schema_error(e,"Unknown Scope Name '%s':\n%s:<root>.data[%i][%i].scope[%i]",sc->dt.s.v,f_nm,i,j,k);
+								_free_json(&json);
+								return;
+							}
+						}
+						if (ctx_e_sc->dt.a.l<EDITOR_SYNTAX_MAX_SCOPE_COUNT){
+							r_dt->sc.dt[ctx_e_sc->dt.a.l]=EDITOR_SYNTAX_UNKNOWN_SCOPE_INDEX;
+						}
+						json_object_t* ctx_e_id=_get_by_key(ctx_e,"push");
+						if (ctx_e_id){
+							if (ctx_e_id->t!=JSON_OBJECT_TYPE_INTEGER||ctx_e_id->dt.i<0){
+								_schema_error(e,"The \"push\" Property Must be a Positive Integer:\n%s:<root>.data[%i][%i].push",f_nm,i,j);
+								_free_json(&json);
+								return;
+							}
+							if (ctx_e_id->dt.i>=o->cl){
+								_schema_error(e,"The \"push\" Property Must be Lower Than %i:\n%s:<root>.data[%i][%i].push",o->cl,f_nm,i,j);
+								_free_json(&json);
+								return;
+							}
+							r_dt->p=(uint16_t)(ctx_e_id->dt.i);
+						}
+						json_object_t* ctx_e_p=_get_by_key(ctx_e,"pop");
+						if (ctx_e_p){
+							if (ctx_e_p->t==JSON_OBJECT_TYPE_TRUE){
+								(c->e+j)->fl|=EDITOR_SYNTAX_CONTEXT_FLAG_POP;
+							}
+							else if(ctx_e_p->t!=JSON_OBJECT_TYPE_FALSE){
+								_schema_error(e,"The \"pop\" Property Must be a Boolean:\n%s:<root>.data[%i][%i].pop",f_nm,i,j);
+								_free_json(&json);
+								return;
+							}
+						}
 					}
 					else if (ctx_e_t->dt.s.l==5&&_cmp_str_len(ctx_e_t->dt.s.v,"scope",5)){
 						c->l--;
@@ -323,7 +394,7 @@ void load_syntax(editor_t* e,editor_syntax_t* o,const char* dt,uint32_t dtl,cons
 							return;
 						}
 						if (ctx_e_sc->dt.a.l>EDITOR_SYNTAX_MAX_SCOPE_COUNT){
-							_schema_error(e,"A Scope Array Must Have no More Than %i Items:\n%s:<root>.data[%i][%i].scope",EDITOR_SYNTAX_MAX_SCOPE_COUNT,f_nm,i,j);
+							_schema_error(e,"The \"scope\" Property Must Have no More Than %i Items:\n%s:<root>.data[%i][%i].scope",EDITOR_SYNTAX_MAX_SCOPE_COUNT,f_nm,i,j);
 							_free_json(&json);
 							return;
 						}

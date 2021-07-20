@@ -283,7 +283,7 @@
 				"type": "regex",
 				"regex": "\\*/",
 				"groups": {},
-				"scope": null,
+				"scope": [],
 				"push": -1,
 				"pop": true
 			},
@@ -293,7 +293,7 @@
 				"groups": {
 					"1": []
 				},
-				"scope": null,
+				"scope": [],
 				"push": -1,
 				"pop": false
 			}
@@ -309,7 +309,7 @@
 				"type": "regex",
 				"regex": "\\*/",
 				"groups": {},
-				"scope": null,
+				"scope": [],
 				"push": -1,
 				"pop": true
 			}
@@ -395,7 +395,7 @@
 				"type": "regex",
 				"regex": "(?=\\S)",
 				"groups": {},
-				"scope": null,
+				"scope": [],
 				"push": -1,
 				"pop": false
 			}
