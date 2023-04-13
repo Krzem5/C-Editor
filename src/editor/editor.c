@@ -250,6 +250,7 @@ void render_editor(editor_t* e){
 }
 
 
+
 void free_editor(editor_t* e){
 	for (uint32_t i=0;i<e->f.ll;i++){
 		editor_line_t* l=*(e->f.l+i);
